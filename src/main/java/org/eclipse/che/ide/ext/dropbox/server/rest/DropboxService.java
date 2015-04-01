@@ -14,7 +14,7 @@ package org.eclipse.che.ide.ext.dropbox.server.rest;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.ide.ext.dropbox.server.DropboxClient;
-import org.eclipse.che.ide.ext.dropbox.shared.DropboxItemReference;
+import org.eclipse.che.ide.ext.dropbox.shared.dto.DbxItemList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +22,9 @@ import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import java.util.List;
+import javax.ws.rs.core.MediaType;
 
 /**
  * @author Vladyslav Zhukovskyi
@@ -41,7 +42,8 @@ public class DropboxService {
 
     @GET
     @Path("list")
-    public List<DropboxItemReference> listDropboxFolder(@DefaultValue("/") @QueryParam("path") String path)
+    @Produces(MediaType.APPLICATION_JSON)
+    public DbxItemList listDropboxFolder(@DefaultValue("/") @QueryParam("path") String path)
             throws UnauthorizedException, ServerException {
         return client.listDropboxFolder(path);
     }

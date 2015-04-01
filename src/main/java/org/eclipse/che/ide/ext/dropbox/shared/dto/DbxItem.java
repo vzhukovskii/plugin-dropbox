@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ext.dropbox.shared;
+package org.eclipse.che.ide.ext.dropbox.shared.dto;
 
 import org.eclipse.che.dto.shared.DTO;
 
@@ -16,7 +16,7 @@ import org.eclipse.che.dto.shared.DTO;
  * @author Vladyslav Zhukovskyi
  */
 @DTO
-public interface DropboxItemReference {
+public interface DbxItem {
     public enum ItemType {
         FILE,
         FOLDER
@@ -27,7 +27,7 @@ public interface DropboxItemReference {
     /** Set path of item. */
     void setPath(String path);
 
-    DropboxItemReference withPath(String path);
+    DbxItem withPath(String path);
 
     /** Get name of item. */
     String getName();
@@ -35,7 +35,7 @@ public interface DropboxItemReference {
     /** Set name of item. */
     void setName(String name);
 
-    DropboxItemReference withName(String name);
+    DbxItem withName(String name);
 
     /** Get type of item, e.g. "file", "folder". */
     ItemType getType();
@@ -43,5 +43,5 @@ public interface DropboxItemReference {
     /** Set type of item, e.g. "file" or "folder". */
     void setType(ItemType itemType);
 
-    DropboxItemReference withType(ItemType itemType);
+    DbxItem withType(ItemType itemType);
 }

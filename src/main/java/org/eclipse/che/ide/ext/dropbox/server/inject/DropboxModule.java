@@ -16,6 +16,8 @@ import com.google.inject.name.Names;
 import org.eclipse.che.api.project.server.ProjectImporter;
 import org.eclipse.che.ide.ext.dropbox.server.DropboxProjectImporter;
 import org.eclipse.che.ide.ext.dropbox.server.oauth2.DropboxOAuthAuthenticator;
+import org.eclipse.che.ide.ext.dropbox.server.oauth2.token.TokenProvider;
+import org.eclipse.che.ide.ext.dropbox.server.oauth2.token.impl.DummyTokenProvider;
 import org.eclipse.che.ide.ext.dropbox.server.rest.DropboxService;
 import org.eclipse.che.inject.DynaModule;
 import org.eclipse.che.security.oauth.OAuthAuthenticator;
@@ -34,6 +36,8 @@ public class DropboxModule extends AbstractModule {
 
         Multibinder.newSetBinder(binder(), ProjectImporter.class).addBinding().to(DropboxProjectImporter.class);
 
+        bind(TokenProvider.class).to(DummyTokenProvider.class);
+
         //test data
         bindConstant().annotatedWith(Names.named("oauth.dropbox.clientid")).to(""); //app key
         bindConstant().annotatedWith(Names.named("oauth.dropbox.clientsecret")).to(""); //app secret
@@ -41,6 +45,6 @@ public class DropboxModule extends AbstractModule {
         bindConstant().annotatedWith(Names.named("oauth.dropbox.authuri")).to("https://www.dropbox.com/1/oauth2/authorize");
         bindConstant().annotatedWith(Names.named("oauth.dropbox.tokenuri")).to("https://api.dropbox.com/1/oauth2/token");
 
-        bindConstant().annotatedWith(Names.named("oauth.foo.token")).to("");
+        bindConstant().annotatedWith(Names.named("oauth.dummy.token")).to("");
     }
 }

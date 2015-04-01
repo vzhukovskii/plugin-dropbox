@@ -16,6 +16,8 @@ import com.google.inject.Singleton;
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
 
+import java.util.Map;
+
 /**
  * @author Vladyslav Zhukovskyi
  */
@@ -24,6 +26,9 @@ public class DropboxProjectImporterPresenter extends AbstractWizardPage<ImportPr
 
     private DropboxProjectImporterView view;
 
+    private static final String PUBLIC_VISIBILITY  = "public";
+    private static final String PRIVATE_VISIBILITY = "private";
+
     @Inject
     public DropboxProjectImporterPresenter(DropboxProjectImporterView view) {
         this.view = view;
@@ -31,7 +36,27 @@ public class DropboxProjectImporterPresenter extends AbstractWizardPage<ImportPr
     }
 
     @Override
+    public void init(ImportProject dataObject) {
+        super.init(dataObject);
+    }
+
+    @Override
     public void go(AcceptsOneWidget container) {
         container.setWidget(view);
+    }
+
+    @Override
+    public boolean isCompleted() {
+        return true;
+    }
+
+    @Override
+    public void onLoadDropboxButtonClicked() {
+
+    }
+
+    private void setImportParameterValue(String name, String value) {
+        Map<String, String> parameters = dataObject.getSource().getProject().getParameters();
+        parameters.put(name, value);
     }
 }

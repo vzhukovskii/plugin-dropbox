@@ -80,3 +80,23 @@
     top: 8px;
     right: 65px;
 }
+
+.blockHeader {
+    overflow: hidden;
+}
+
+.blockHeader td {
+    width: 100%;
+}
+
+.blockHeader td:first-child {
+    white-space: nowrap;
+    font-weight: bold;
+    width: 10px;
+}
+
+.blockHeader hr {
+    border: 0;
+    border-bottom: 1px solid #505050;
+    padding-top: 1px;
+}

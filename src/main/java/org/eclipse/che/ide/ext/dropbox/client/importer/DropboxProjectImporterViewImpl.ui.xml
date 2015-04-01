@@ -16,12 +16,73 @@
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
     <ui:with field='locale' type='org.eclipse.che.ide.ext.dropbox.client.DropboxLocalization'/>
     <ui:with field='resources' type='org.eclipse.che.ide.ext.dropbox.client.DropboxResources'/>
-    <ui:style></ui:style>
-    <g:DockPanel width="320px">
+    <ui:with field="style" type="org.eclipse.che.ide.ext.dropbox.client.importer.DropboxProjectImporterViewImpl.Style"/>
 
+    <g:DockPanel width="100%">
+        <!-- Project Information -->
         <g:Dock direction="NORTH">
-            <g:Label text="Foo"/>
+            <g:HTMLPanel addStyleNames="{style.blockHeader}">
+                <table>
+                    <tr>
+                        <td><g:Label text="{locale.importWizardProjectInformation}"/></td>
+                        <td>
+                            <hr/>
+                        </td>
+                    </tr>
+                </table>
+            </g:HTMLPanel>
         </g:Dock>
 
+        <!-- Name Configuration -->
+        <g:Dock direction="NORTH">
+            <g:FlowPanel height="25px" addStyleNames="{style.namePanel}">
+                <g:Label text="Name:" addStyleNames="{style.labelPosition}"/>
+                <g:TextBox width="290px" height="14px" addStyleNames="{style.alignRight}" tabIndex="0"/>
+            </g:FlowPanel>
+        </g:Dock>
+
+        <!-- Description Configuration -->
+        <g:Dock direction="NORTH">
+            <g:FlowPanel height="50px" addStyleNames="{style.namePanel}">
+                <g:Label text="Description:" addStyleNames="{style.labelPosition}"/>
+                <g:TextBox width="290px" height="42px" addStyleNames="{style.alignRight}" tabIndex="0"/>
+            </g:FlowPanel>
+        </g:Dock>
+
+        <!-- Privacy Configuration -->
+        <g:Dock direction="NORTH">
+            <g:FlowPanel height="30px" addStyleNames="{style.namePanel}">
+                <g:Label text="Privacy:" addStyleNames="{style.labelPosition}"/>
+                <g:RadioButton name="privacy" text="Public" addStyleNames="{style.radioButtonPosition}" value="true"/>
+                <g:RadioButton name="privacy" text="Private" addStyleNames="{style.radioButtonPosition}"/>
+            </g:FlowPanel>
+        </g:Dock>
+
+        <!-- Dropbox Section -->
+        <g:Dock direction="NORTH">
+            <g:HTMLPanel addStyleNames="{style.blockHeader}">
+                <table>
+                    <tr>
+                        <td><g:Label text="{locale.importWizardDropboxBrowser}"/></td>
+                        <td>
+                            <hr/>
+                        </td>
+                    </tr>
+                </table>
+            </g:HTMLPanel>
+        </g:Dock>
+
+        <!-- Dropbox Browser -->
+        <g:Dock direction="NORTH">
+            <g:DeckPanel animationEnabled="true" ui:field="dbxPanelSwitcher">
+
+                <g:FlowPanel height="50px">
+                    <g:Button text="Open Dropbox" ui:field="openDbxButton"/>
+                </g:FlowPanel>
+
+                <g:FlowPanel height="150px" ui:field="dbxContainer"/>
+
+            </g:DeckPanel>
+        </g:Dock>
     </g:DockPanel>
 </ui:UiBinder>

@@ -15,17 +15,16 @@ import com.dropbox.core.DbxEntry;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.google.api.client.repackaged.com.google.common.base.Strings;
-import org.eclipse.che.api.auth.shared.dto.OAuthToken;
+
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.project.server.FolderEntry;
-import org.eclipse.che.commons.env.EnvironmentContext;
-import org.eclipse.che.commons.user.User;
 import org.eclipse.che.dto.server.DtoFactory;
-import org.eclipse.che.ide.ext.dropbox.server.oauth2.DropboxOAuthAuthenticator;
-import org.eclipse.che.ide.ext.dropbox.shared.DropboxItemReference;
+import org.eclipse.che.ide.ext.dropbox.server.oauth2.token.TokenProvider;
+import org.eclipse.che.ide.ext.dropbox.shared.dto.DbxItem;
+import org.eclipse.che.ide.ext.dropbox.shared.dto.DbxItemList;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -36,27 +35,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static org.eclipse.che.ide.ext.dropbox.shared.DropboxItemReference.ItemType.FILE;
-import static org.eclipse.che.ide.ext.dropbox.shared.DropboxItemReference.ItemType.FOLDER;
+import static org.eclipse.che.ide.ext.dropbox.shared.dto.DbxItem.ItemType.FILE;
+import static org.eclipse.che.ide.ext.dropbox.shared.dto.DbxItem.ItemType.FOLDER;
 
 /**
  * @author Vladyslav Zhukovskyi
  */
 @Singleton
 public class DropboxClient {
-    private DropboxOAuthAuthenticator authenticator;
+    private TokenProvider tokenProvider;
 
     @Inject
-    public DropboxClient(DropboxOAuthAuthenticator authenticator) {
-        this.authenticator = authenticator;
+    public DropboxClient(TokenProvider tokenProvider) {
+        this.tokenProvider = tokenProvider;
     }
 
-    public List<DropboxItemReference> listDropboxFolder(@Nonnull String path) throws UnauthorizedException, ServerException {
+    public DbxItemList listDropboxFolder(@Nonnull String path) throws UnauthorizedException, ServerException {
         if (Strings.isNullOrEmpty(path)) {
             throw new ServerException("Path shouldn't be null");
         }
 
-        DbxClient dbxClient = getClient();
+        DbxClient dbxClient = getDbxClient();
         DbxEntry.WithChildren dbxMetadataWithChildren;
 
         try {
@@ -65,40 +64,44 @@ public class DropboxClient {
             throw new ServerException(e.getMessage(), e);
         }
 
-        List<DropboxItemReference> dropboxItems = new ArrayList<>();
-        for (DbxEntry dbxEntry : dbxMetadataWithChildren.children) {
-            DropboxItemReference dropboxItemReference = DtoFactory.getInstance().createDto(DropboxItemReference.class)
-                    .withName(dbxEntry.name)
-                    .withPath(dbxEntry.path)
-                    .withType(dbxEntry.isFile() ? FILE : FOLDER);
+        List<DbxItem> dropboxItems = new ArrayList<>();
+        if (dbxMetadataWithChildren.children != null) {
+            for (DbxEntry dbxEntry : dbxMetadataWithChildren.children) {
+                DbxItem dbxItem = DtoFactory.getInstance().createDto(DbxItem.class)
+                                            .withName(dbxEntry.name)
+                                            .withPath(dbxEntry.path)
+                                            .withType(dbxEntry.isFile() ? FILE : FOLDER);
 
-            dropboxItems.add(dropboxItemReference);
+                dropboxItems.add(dbxItem);
+            }
         }
 
-        return dropboxItems;
+        return DtoFactory.getInstance().createDto(DbxItemList.class).withItemList(dropboxItems);
     }
 
-    public void importDropboxFolder(@Nonnull String path, @Nonnull FolderEntry baseFolder) throws UnauthorizedException, ServerException, ConflictException, ForbiddenException {
+    public void importDropboxFolder(@Nonnull String path, @Nonnull FolderEntry baseFolder)
+            throws UnauthorizedException, ServerException, ConflictException, ForbiddenException {
         if (Strings.isNullOrEmpty(path)) {
             throw new ServerException("Path shouldn't be null");
         }
 
-        DbxClient dbxClient = getClient();
-        doDownload(dbxClient, path, baseFolder);
+        DbxClient dbxClient = getDbxClient();
+        doRecursiveDownload(dbxClient, path, baseFolder);
     }
 
-    private void doDownload(DbxClient dbxClient, String path, FolderEntry baseFolder) throws ConflictException, ForbiddenException, ServerException {
+    private void doRecursiveDownload(DbxClient dbxClient, String path, FolderEntry baseFolder)
+            throws ConflictException, ForbiddenException, ServerException {
         try {
             DbxEntry.WithChildren dbxEntries = dbxClient.getMetadataWithChildren(path);
 
             for (DbxEntry dbxEntry : dbxEntries.children) {
                 if (dbxEntry.isFolder()) {
                     FolderEntry childFolder = baseFolder.createFolder(dbxEntry.name);
-                    doDownload(dbxClient, dbxEntry.asFolder().path, childFolder);
+                    doRecursiveDownload(dbxClient, dbxEntry.asFolder().path, childFolder);
                 } else if (dbxEntry.isFile()) {
                     try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                         dbxClient.getFile(dbxEntry.asFile().path, dbxEntry.asFile().rev, outputStream);
-                        baseFolder.createFile(dbxEntry.name, outputStream.toByteArray(), "application/octet-stream"); //need to find way to guess mime type from input stream
+                        baseFolder.createFile(dbxEntry.name, outputStream.toByteArray(), null);
                     }
                 }
             }
@@ -107,24 +110,19 @@ public class DropboxClient {
         }
     }
 
-    private DbxClient getClient() throws UnauthorizedException, ServerException {
-        final User currentUser = EnvironmentContext.getCurrent().getUser();
+    private DbxClient getDbxClient() throws UnauthorizedException, ServerException {
+        String token;
 
-        OAuthToken token;
         try {
-            token = authenticator.getToken(currentUser.getId());
-        } catch (IOException e) {
-            if (e.getCause() != null && e.getCause() instanceof DbxException.InvalidAccessToken) {
-                throw new UnauthorizedException("Authentication required");
+            token = tokenProvider.getToken();
+        } catch (Exception e) {
+            if (e instanceof UnauthorizedException) {
+                throw (UnauthorizedException)e;
             }
-            throw new ServerException(e.getMessage(), e);
-        }
-
-        if (token == null || Strings.isNullOrEmpty(token.getToken())) {
-            throw new UnauthorizedException("Authentication required");
+            throw new ServerException(e);
         }
 
         DbxRequestConfig dbxRequestConfig = new DbxRequestConfig("Codenvy/1.0", Locale.getDefault().toString());
-        return new DbxClient(dbxRequestConfig, token.getToken());
+        return new DbxClient(dbxRequestConfig, token);
     }
 }

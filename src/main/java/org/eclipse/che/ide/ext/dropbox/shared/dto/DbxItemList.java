@@ -8,11 +8,20 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ext.dropbox.shared;
+package org.eclipse.che.ide.ext.dropbox.shared.dto;
+
+import org.eclipse.che.dto.shared.DTO;
+
+import java.util.List;
 
 /**
  * @author Vladyslav Zhukovskyi
  */
-public class MimeTypeMatcher {
+@DTO
+public interface DbxItemList {
+    List<DbxItem> getItemList();
 
+    void setItemList(List<DbxItem> itemList);
+
+    DbxItemList withItemList(List<DbxItem> itemList);
 }

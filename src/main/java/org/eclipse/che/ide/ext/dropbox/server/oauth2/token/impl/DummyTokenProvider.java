@@ -8,20 +8,28 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.ide.ext.dropbox.client;
+package org.eclipse.che.ide.ext.dropbox.server.oauth2.token.impl;
 
-import com.google.gwt.i18n.client.Messages;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+
+import org.eclipse.che.ide.ext.dropbox.server.oauth2.token.TokenProvider;
 
 /**
  * @author Vladyslav Zhukovskyi
  */
-public interface DropboxLocalization extends Messages {
+@Singleton
+public class DummyTokenProvider implements TokenProvider {
+    private String token;
 
-    /** Import wizard */
+    @Inject
+    public DummyTokenProvider(@Named("oauth.dummy.token") String token) {
+        this.token = token;
+    }
 
-    @Key("import.wizard.project.information")
-    public String importWizardProjectInformation();
-
-    @Key("import.wizard.dropbox.browser")
-    public String importWizardDropboxBrowser();
+    @Override
+    public String getToken() throws Exception {
+        return token;
+    }
 }

@@ -10,10 +10,11 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.dropbox.client.importer;
 
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.*;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import org.eclipse.che.ide.ext.dropbox.client.DropboxResources;
@@ -22,14 +23,22 @@ import org.eclipse.che.ide.ui.Styles;
 /**
  * @author Vladyslav Zhukovskyi
  */
-@Singleton
 public class DropboxProjectImporterViewImpl extends Composite implements DropboxProjectImporterView {
 
-    interface DropboxProjectImporterViewImplUiBinder extends UiBinder<DockLayoutPanel, DropboxProjectImporterViewImpl> {
+    interface DropboxProjectImporterViewImplUiBinder extends UiBinder<DockPanel, DropboxProjectImporterViewImpl> {
     }
 
     @UiField(provided = true)
-    Style       style;
+    Style style;
+
+    @UiField
+    Button openDbxButton;
+
+    @UiField
+    FlowPanel dbxContainer;
+
+    @UiField
+    DeckPanel dbxPanelSwitcher;
 
     private ActionDelegate delegate;
 
@@ -40,6 +49,18 @@ public class DropboxProjectImporterViewImpl extends Composite implements Dropbox
         style.ensureInjected();
 
         initWidget(uiBinder.createAndBindUi(this));
+
+        openDbxButton.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                delegate.onLoadDropboxButtonClicked();
+            }
+        });
+    }
+
+    @Override
+    public void showDropboxPanelFor(boolean authorized) {
+
     }
 
     @Override
@@ -69,5 +90,7 @@ public class DropboxProjectImporterViewImpl extends Composite implements Dropbox
         String label();
 
         String horizontalLine();
+
+        String blockHeader();
     }
 }

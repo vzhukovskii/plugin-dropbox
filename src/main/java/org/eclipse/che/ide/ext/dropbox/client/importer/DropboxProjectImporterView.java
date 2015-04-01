@@ -19,6 +19,8 @@ import org.eclipse.che.ide.api.mvp.View;
 @ImplementedBy(DropboxProjectImporterViewImpl.class)
 public interface DropboxProjectImporterView extends View<DropboxProjectImporterView.ActionDelegate> {
     public interface ActionDelegate {
-
+        void onLoadDropboxButtonClicked();
     }
+
+    void showDropboxPanelFor(boolean authorized); // ?
 }

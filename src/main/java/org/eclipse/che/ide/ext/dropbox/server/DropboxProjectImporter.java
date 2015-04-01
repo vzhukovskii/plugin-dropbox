@@ -54,16 +54,19 @@ public class DropboxProjectImporter implements ProjectImporter {
 
     @Override
     public String getDescription() {
-        return "Import project from Dropbox.";
+        return "Here you can import any folder from Dropbox into Codenvy as standalone project.";
     }
 
     @Override
-    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters) throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
+    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters)
+            throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
         importSources(baseFolder, location, parameters, LineConsumerFactory.NULL);
     }
 
     @Override
-    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters, LineConsumerFactory lineConsumerFactory) throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
+    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters,
+                              LineConsumerFactory lineConsumerFactory)
+            throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
         client.importDropboxFolder(location, baseFolder);
     }
 }
